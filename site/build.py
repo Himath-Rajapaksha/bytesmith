@@ -28,10 +28,15 @@ RULE = "#d9d3c7"
 REPO = "https://github.com/Himath-Rajapaksha/bytesmith"
 SELF_AUDIT = REPO + "/blob/main/examples/bytesmith-showcase-self-audit.pdf"
 REPO_SLAB = "Himath-Rajapaksha/bytesmith"
+EDGE_SCENARIOS = 13
+CI_CHECKS = 9
 # This page's own audit result. Kept as constants so the number published here
 # is the number in the shipped report -- if one moves, both must be edited.
 SELF_SCORE = "11.3"
 SELF_BAND = "Human-crafted"
+# Verified against the shipped PDF by test_build.py -- see "claims a page
+# count" there. Hardcoding it is a drift risk, so the test reads the PDF.
+SELF_PAGES = 12
 LICENSE = "Apache-2.0"
 
 BANDS = [
@@ -525,18 +530,23 @@ def build(skill_dir, out_dir):
 <section id="points">
   <p class="sec-no">02 — The checklist</p>
   <h2>Thirty-six fingerprints, five groups, no vibes.</h2>
-  <p class="sub">Parsed live from the skill's own <code>checklist.md</code>:
-  {len(points)} points, weights summing to {total_w:g}, maximum attainable
-  score 750. The antidote column is the matching row of the blueprint below.</p>
+  <p class="sub">Every row on this page is generated from the skill's own
+  <code>checklist.md</code> at build time &#8212; {len(points)} points, weights
+  summing to {total_w:g}, maximum attainable score 750. There is no JavaScript
+  here; the numbers below were checked into the HTML by
+  <code>site/build.py</code>, which refuses to emit a page unless the checklist
+  still holds {len(points)} points, still sums to {total_w:g}, and its five
+  groups still tile 1&#8211;36. The antidote column is the matching row of the
+  blueprint below.</p>
   {"".join(group_blocks)}
 </section>
 
 <section id="blueprint">
   <p class="sec-no">03 — The blueprint</p>
   <h2>What to do about each one.</h2>
-  <p class="sub">The same {sum(len(r) for _, _, r in sections)} rows as the
-  skill ships, parsed from <code>countermeasures.md</code>. Expand any row for
-  the specific remedy.</p>
+  <p class="sub">The same {sum(len(r) for _, _, r in sections)} rows the skill
+  ships, generated from <code>countermeasures.md</code> by the same pass. Expand
+  any row for the specific remedy.</p>
   {"".join(cm_blocks)}
 </section>
 
@@ -568,9 +578,23 @@ def build(skill_dir, out_dir):
       <p class="sub" style="margin:18px 0 0">This page was then held to the
       same instrument. <b>{SELF_SCORE} — {SELF_BAND}</b>, four points at Mild
       or worse, published rather than quietly fixed:
-      <a href="{SELF_AUDIT}">read the 11-page audit of this page</a>.</p>
+      <a href="{SELF_AUDIT}">read the {SELF_PAGES}-page audit of this page</a>.</p>
     </div>
   </div>
+  <p class="fine"><b>How this is kept honest.</b> Every push runs {CI_CHECKS} checks:
+  frontmatter and the 15-token report contract, checklist integrity
+  (36 points, Σw 37.5, groups tiling 1–36), 36 remedies across 5 sections, a
+  PDF that must render A4 with no unreplaced tokens and a footer on every page
+  but the cover, a {EDGE_SCENARIOS}-scenario battery covering the band edges and
+  the 0 and 100 bounds, and this page's own assertions. It runs on GitHub's
+  image, not on one machine — which is how three portability bugs in the
+  fixture suite got found and fixed.
+  <a href="{REPO}/actions">See the runs.</a></p>
+  <p class="fine"><b>Licence.</b> {LICENSE}. Fork it, retune the checklist for
+  your own domain, redistribute it commercially. The express patent grant in
+  §3 is the reason for Apache over MIT, and the definitions explicitly reach
+  documentation and configuration source — which matters when the artefact is
+  mostly markdown and CSS. Mark the files you change.</p>
   <p class="fine">Band edges: 0 Human-crafted · 15 Human + AI assists · 35 Hybrid
   · 60 AI-dominant · 80 Vibecoded. Anti-gaming caps keep correlated siblings
   from stacking, and a group holding over half the score is flagged for

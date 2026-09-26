@@ -145,6 +145,36 @@ for rel in ["examples/bytesmith-showcase-self-audit.pdf",
             "LICENSE", "NOTICE"]:
     check(f"link target exists: {rel}", (HERE.parent / rel).exists())
 
+print("\n== claims match the artifacts they describe ==")
+# A page that states a number must state the real one. This reads the shipped
+# PDF rather than trusting the constant, which is the only way a stale figure
+# gets caught: the "11-page" claim outlived a re-render that made it 12.
+pdf = HERE.parent / "examples" / "bytesmith-showcase-self-audit.pdf"
+if pdf.exists():
+    try:
+        import re as _re
+        raw = subprocess.run(["pdfinfo", str(pdf)], capture_output=True, text=True)
+        m = _re.search(r"Pages:\s+(\d+)", raw.stdout)
+        if m:
+            actual = int(m.group(1))
+            claimed = _re.search(r"read the (\d+)-page audit", html)
+            check("claims a page count", claimed is not None)
+            check(f"page count claim matches the PDF ({actual})",
+                  claimed is not None and int(claimed.group(1)) == actual,
+                  f"page says {claimed.group(1) if claimed else '?'}, PDF has {actual}")
+    except FileNotFoundError:
+        print("  SKIP  pdfinfo unavailable; cannot verify the page-count claim")
+    txt = subprocess.run(["pdftotext", str(pdf), "-"], capture_output=True, text=True).stdout
+    m = _re.search(r"\b(\d+\.\d)\b", txt.split("Σ =")[0] if "Σ =" in txt else "")
+    check("self-audit score appears in the shipped PDF", "11.3" in txt)
+    check("self-audit band appears in the shipped PDF", "HUMAN-CRAFTED" in txt.upper())
+else:
+    check("self-audit PDF shipped", False, "file missing")
+check("no 'parsed live' claim (page ships no JS)", "parsed live" not in low)
+check("copy states build-time generation", "at build time" in low)
+check("verification claims are checkable", "/actions" in html)
+check("licence rationale stated", "express patent grant" in low)
+
 print("\n== structure ==")
 check("single h1", html.count("<h1>") == 1)
 check("section ids wired to nav",
