@@ -13,6 +13,18 @@ HERE = pathlib.Path(__file__).resolve().parent
 DIST = HERE / "dist"
 INDEX = DIST / "index.html"
 
+# The generator's own constants, so the assertions below track the source
+# rather than a copy of it. Importing is safe: build.py does its work in
+# build(), which is only called from main() under __main__.
+sys.path.insert(0, str(HERE))
+import build as gen  # noqa: E402
+
+DETAIL_MAG = gen.DETAIL_MAG
+SLIVER = gen.SLIVER
+SLIVER_PX = gen.SLIVER_PX
+DENOM = gen.DENOM
+CONTRIB = gen.WORKED["w"] * gen.WORKED["presence"] * gen.WORKED["likelihood"]
+
 failures = []
 
 
@@ -41,7 +53,6 @@ check("5 group heads", html.count('class="group-head"') == 5)
 svg = re.search(r'<svg class="ruler".*?</svg>', html, re.S)
 check("ruler svg has 5 band rects",
       svg is not None and len(re.findall(r'<rect ', svg.group(0))) == 5)
-check("5 band labels in key", html.count('<li><span class="rng">') == 5)
 check("all 36 point numbers present",
       all(f'<td class="num">{n}</td>' in html for n in range(1, 37)))
 check("no unreplaced build tokens", "{{" not in html, )
@@ -125,9 +136,215 @@ check("eyebrow present", "forensic design audit for the web" in low)
 
 print("\n== hero asymmetry + band artifact ==")
 check("hero grid 7fr 5fr", re.search(r"\.hero\s*\{[^}]*7fr 5fr", html) is not None)
-check("ruler svg present", "<svg" in html and 'viewBox="0 0 320 52"' in html)
+check("ruler svg present", "<svg" in html
+      and re.search(r'class="ruler" viewBox="0 0 320 \d+"', html) is not None)
 check("ruler has aria-label", 'aria-label="AI Usage Score' in html)
 check("ruler labels 0 and 100", ">0<" in html and ">100<" in html)
+# FIG. 1 is a title block now, so the band edges are stations on a dimension
+# line rather than tick labels. The edges are pinned here so a change to
+# SKILL.md's bands cannot silently move a station on the drawing. Counts are
+# scoped to the ruler svg, because FIG. 2 uses the same drafting vocabulary.
+check("ruler dimension line drawn", svg is not None and 'class="dim"' in svg.group(0))
+check("ruler has a witness line per station",
+      svg is not None and svg.group(0).count('class="wit"') == 6)
+check("ruler has two slashed terminators",
+      svg is not None and svg.group(0).count('class="term"') == 2)
+check("ruler stations are the real band edges",
+      all(f">{e}<" in html for e in (0, 15, 35, 60, 80, 100)))
+check("ruler figure is captioned",
+      "<figcaption>FIG. 1 &mdash; AI USAGE SCORE, FIVE BANDS, &Sigma;w 37.5"
+      in html)
+check("ruler aria-label names every band",
+      all(b in html for b in ("Human-crafted", "Human plus AI assists",
+                              "Hybrid", "AI-dominant", "Vibecoded.")))
+check("legend swatch decodes each band fill",
+      all(f'class="sw b{i}"' in html for i in range(1, 6)))
+check("legend keeps its 5 range spans", html.count('<li><span class="rng">') == 5)
+
+print("\n== how a point is scored (FIG. 2) ==")
+fig2 = re.search(r'<svg class="calc-svg".*?</svg>', html, re.S)
+check("fig 2 svg present", fig2 is not None
+      and re.search(r'class="calc-svg" viewBox="0 0 \d+ \d+', html)
+      is not None)
+f2 = fig2.group(0) if fig2 else ""
+check("section exists and is nav-wired", 'id="scored"' in html and 'href="#scored"' in html)
+check("sec-no renumbered 03-05", "03 &mdash; How a point is scored" in html
+      and "05 &mdash; Install" in html)
+check("worked example is point 12", "Colored Border Cards" in html)
+# The arithmetic is generated, not typed, and comes from SKILL.md section 3.
+# These regexes tolerate the line wrapping the template leaves in the cell.
+check("arithmetic is printed on the page",
+      re.search(r"1\.0 (?:&times;|×)\s*1 (?:&times;|×)\s*2 = 2\.000", html)
+      is not None)
+check("denominator printed and derived",
+      re.search(r"750 = 37\.5 (?:&Sigma;|Σ)w (?:&times;|×) 4 (?:&times;|×) 5",
+                html) is not None)
+# The shipped self-audit prints 0.400 for point 12, which its own cited
+# formula cannot produce. The page follows the formula instead, so the
+# unreconcilable figure must not appear anywhere in the output.
+check("worked figure comes from the formula, not the report",
+      "0.400" not in html)
+check("presence and likelihood ranges printed",
+      f"presence {gen.WORKED['presence_range']}" in f2
+      and f"likelihood {gen.WORKED['likelihood_range']}" in f2)
+# character references are not decoded inside inline SVG <text>, so a stray
+# entity in the figure would render as literal punctuation
+check("no character references inside the figures",
+      not re.search(r"&[a-z]{2,6};", f2)
+      and not re.search(r"&[a-z]{2,6};", svg.group(0)))
+check("detail magnification declared and consistent",
+      f">DETAIL {DETAIL_MAG}:1<" in f2 and 'class="break"' in f2)
+check("the sliver really is too narrow to draw at scale",
+      f"{SLIVER_PX:.2f} of 304 drawn units" in f2 and SLIVER_PX < 1.5)
+check("schematic tagged not to scale",
+      "SCHEMATIC" in f2 and "NOT TO SCALE" in f2)
+check("fig 2 has witness lines, a datum and a leader",
+      'class="wit"' in f2 and 'class="datum"' in f2 and 'class="lead"' in f2)
+check("fig 2 aria-label is complete",
+      'aria-label="Annotated section drawing' in f2
+      and "0.267 per cent of the bar's width" in f2)
+check("fig 2 has no band names (it is not the ruler)",
+      "Vibecoded" not in f2)
+check("fig 2 is captioned", "<figcaption>FIG. 2 &mdash; POINT 12 RESOLVED." in html)
+check("worked-example cells avoid the checklist num class",
+      '<td class="v">2.000</td>' in html and html.count('<td class="num">') == 36)
+check("the scoring section states which source wins a disagreement",
+      re.search(r"the\s+report is wrong and the\s+formula is what settles it",
+                html) is not None)
+
+print("\n== the four open findings are closed ==")
+# point 5: three italic serif spans in one hero paragraph scored 0.800. The
+# shipped blueprint's own remedy is to keep exactly one.
+check("exactly one italic on the page", html.count("<em>") == 1)
+check("the survivor is 'line to change'", "<em>line to change</em>" in html)
+# point 25: the X-not-Y pivot, 0.267. The remedy is a flat claim.
+check("pivot removed", "not the vibe to change" not in html)
+check("flat claim printed", "Every point names the" in html)
+# point 12: the 3px moss left-strip was all of 0.400.
+check("moss left-strip removed from .spec", "border-left" not in low)
+check(".spec uses a rule box + ink top rule",
+      re.search(r"\.spec\s*\{[^}]*border:\s*1px solid var\(--rule\)", html)
+      is not None
+      and re.search(r"\.spec\s*\{[^}]*border-top:\s*2px solid var\(--ink\)", html)
+      is not None)
+# point 32: /terms and /privacy did not exist and the footer carried no legal
+# links. 0.800 -- the largest of the four.
+check("footer links both legal pages",
+      html.count('href="/terms"') == 1 and html.count('href="/privacy"') == 1)
+check("page states the four findings are closed",
+      "The four findings are closed" in html)
+check("no fabricated post-fix score",
+      "2.0 —" not in html and "2.0 &mdash;" not in html)
+
+print("\n== legal pages (point 32) ==")
+for slug, words in (("terms", ("apache-2.0", "no warranty")),
+                    ("privacy", ("no analytics", "no cookies",
+                                 "opens no network sockets"))):
+    p = DIST / f"{slug}.html"
+    check(f"{slug}.html generated", p.exists())
+    if not p.exists():
+        continue
+    doc = p.read_text(encoding="utf-8")
+    dlow = doc.lower()
+    check(f"{slug} has exactly one h1", doc.count("<h1>") == 1)
+    check(f"{slug} states its own subject",
+          all(w in dlow for w in words))
+    check(f"{slug} is dated", "2026-09-26" in doc)
+    check(f"{slug} ships no JS", "<script" not in dlow)
+    check(f"{slug} has no dead links", 'href="#"' not in dlow and 'href=""' not in dlow)
+    check(f"{slug} reuses the palette",
+          all(h in dlow for h in ("#fbfaf7", "#14181d", "#b4451f", "#d9d3c7")))
+    check(f"{slug} reuses the type system",
+          "charter" in dlow and "lato" in dlow and "fira code" in dlow)
+    check(f"{slug} has a focus ring and a skip link",
+          ":focus-visible" in dlow and 'class="skip"' in dlow)
+    check(f"{slug} is linked from its sibling", f'href="/{slug}"' in doc)
+    check(f"{slug} has no unreplaced tokens", "{{" not in doc)
+check("index links both legal pages in the footer",
+      'class="legal"><a href="/terms">' in html
+      and '<a href="/privacy">' in html)
+
+print("\n== accessibility ==")
+# The audit's own instrument had no focus state at all. WCAG 2.2 2.4.11
+# Focus Appearance is AA, and there was nothing to pass.
+check("focus-visible ring declared",
+      re.search(r":focus-visible\s*\{[^}]*outline:\s*2px solid var\(--ink\)", html)
+      is not None)
+check("focus ring is offset from the component",
+      re.search(r":focus-visible\s*\{[^}]*outline-offset:\s*2px", html) is not None)
+check("skip link exists and is first in body",
+      'class="skip" href="#main"' in html
+      and re.search(r'<body>\s*<a class="skip"', html) is not None)
+check("skip link has a target", 'id="main"' in html and "<main" in html)
+check("skip link becomes visible on focus",
+      re.search(r"\.skip:focus-visible\s*\{[^}]*position:\s*fixed", html) is not None)
+check("reduced motion respected",
+      "@media (prefers-reduced-motion: reduce)" in html)
+# the page prints measured numbers, so the digits must line up
+for sel in [r"\.ruler\s*\{[^}]*tabular-nums",
+            r"\.spec\s*\{[^}]*tabular-nums",
+            r"td\.num\s*\{[^}]*tabular-nums",
+            r"td\.w\s*\{[^}]*tabular-nums"]:
+    check(f"tabular-nums on {sel.split('}')[0][2:]}", re.search(sel, html) is not None)
+# point 4's own antidote, applied to the page that publishes it
+check("type scale declared as a ratio", "--r: 1.25" in low)
+check("scale steps are derived from the ratio",
+      "calc(var(--base) * var(--r))" in low
+      and "calc(var(--base) / var(--r))" in low)
+ad_hoc = re.findall(r"font-size:\s*(\d+(?:\.\d+)?)px", html)
+check("no ad-hoc pixel font sizes left", not ad_hoc, str(sorted(set(ad_hoc))))
+check("measure is a variable", "--measure: 62ch" in low)
+check("dense measure is a second variable", "--measure-dense: 56ch" in low)
+check("dense measure used by the table", "max-width: var(--measure-dense)" in html)
+check("h1 and h2 balance their lines",
+      re.search(r"h1\s*\{[^}]*text-wrap:\s*balance", html) is not None
+      and re.search(r"h2\s*\{[^}]*text-wrap:\s*balance", html) is not None)
+check("prose sets its orphans",
+      re.search(r"\.lede\s*\{[^}]*text-wrap:\s*pretty", html) is not None
+      and re.search(r"\.sub\s*\{[^}]*text-wrap:\s*pretty", html) is not None)
+check("interactive target sizes grown to 44px",
+      "inset: -13px -4px" in html)
+check("narrow-screen antidote column is dropped, not shrunk",
+      re.search(r"@media \(max-width: 560px\)\s*\{\s*th\.cm, td\.cm", html)
+      is not None)
+# the PDF cover eyebrow was 3.24:1 on ink
+rpt = HERE.parent / "report-styles.css"
+rs = rpt.read_text(encoding="utf-8")
+check("PDF lifts rust for the cover eyebrow",
+      "--rust-lift: #e08a5f" in rs and re.search(
+          r"\.cover \.eyebrow\s*\{[^}]*color:\s*var\(--rust-lift\)", rs) is not None)
+check("PDF cover band chip lifted too",
+      re.search(r"\.cover \.band\s*\{[^}]*border:\s*1px solid var\(--rust-lift\)", rs)
+      is not None)
+check("the 78pt score numeral keeps --rust (3.24:1 clears large text)",
+      re.search(r"\.cover \.score-num\s*\{[^}]*color:\s*var\(--rust\)", rs) is not None)
+
+print("\n== one palette, two files ==")
+
+
+def root_tokens(text):
+    body = re.search(r":root\s*\{(.*?)\}", text, re.S)
+    body = body.group(1) if body else text
+    return {k: v.strip() for k, v in
+            re.findall(r"--([a-z0-9-]+)\s*:\s*([^;]+);", body)}
+
+
+site_tok, pdf_tok = root_tokens(html), root_tokens(rs)
+# The three font stacks differ on purpose: the PDF needs print-safe
+# substitutes for headless Linux, the site needs screen fallbacks. Nothing
+# else may disagree, or the two files have drifted apart under the same name.
+conflicts = {k: (site_tok[k], pdf_tok[k]) for k in set(site_tok) & set(pdf_tok)
+             if site_tok[k] != pdf_tok[k]}
+check("only the font stacks differ between the two stylesheets",
+      set(conflicts) <= {"mono", "sans", "serif"}, str(conflicts))
+for name in ("paper", "ink", "rule", "rust", "rust-lift", "moss", "gold"):
+    check(f"--{name} is byte-identical in both",
+          site_tok.get(name) == pdf_tok.get(name),
+          f"site={site_tok.get(name)} pdf={pdf_tok.get(name)}")
+check("no token name means two colours across the two files",
+      all(k in ("mono", "sans", "serif") for k in conflicts), str(conflicts))
+check("site surface and PDF paper-2 are the same hex under two names",
+      site_tok.get("surface") == pdf_tok.get("paper-2"))
 
 print("\n== showcase <-> repository cross-links ==")
 REPO = "https://github.com/Himath-Rajapaksha/bytesmith"
@@ -178,7 +395,7 @@ check("licence rationale stated", "express patent grant" in low)
 print("\n== structure ==")
 check("single h1", html.count("<h1>") == 1)
 check("section ids wired to nav",
-      all(f'id="{i}"' in html for i in ["runs", "points", "blueprint", "install"]))
+      all(f'id="{i}"' in html for i in ["runs", "points", "scored", "blueprint", "install"]))
 check("has viewport meta", 'name="viewport"' in html)
 check("has description meta", 'name="description"' in html)
 check("lang attribute", 'lang="en"' in html)
