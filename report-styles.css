@@ -11,6 +11,7 @@
   --ink-3: #6b7280;
   --rule: #d9d3c7;
   --rust: #b4451f;
+  --rust-lift: #e08a5f;
   --rust-tint: #f6e7df;
   --moss: #4a5d3a;
   --gold: #8a6d1f;
@@ -58,12 +59,18 @@ body {
   flex-direction: column;
   justify-content: space-between;
 }
+/* The cover is ink-on-ink ground, so any text under ~24pt needs the
+   lifted rust: #b4451f on #14181d is 3.24:1, which clears the 3:1 floor a
+   78pt numeral needs (see .score-num, below) and fails the 4.5:1 floor an
+   8pt eyebrow needs. --rust-lift is 6.76:1. The two tokens live in the
+   showcase stylesheet byte-for-byte, so the report cannot be less legible
+   than the page that advertises it. */
 .cover .eyebrow {
   font-family: var(--mono);
   font-size: 8pt;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: var(--rust);
+  color: var(--rust-lift);
 }
 .cover h1 {
   font-family: var(--serif);
@@ -89,6 +96,8 @@ body {
   font-family: var(--serif);
   font-size: 78pt;
   line-height: 0.85;
+  /* 78pt is large text, so 3:1 is the applicable floor and --rust's
+     3.24:1 on the ink cover clears it. Do not "fix" this one. */
   color: var(--rust);
   font-weight: 700;
 }
@@ -99,8 +108,8 @@ body {
   font-size: 8.5pt;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  border: 1px solid var(--rust);
-  color: var(--rust);
+  border: 1px solid var(--rust-lift);
+  color: var(--rust-lift);
   padding: 2px 8px;
 }
 .cover .verdict { font-size: 11pt; margin-top: 4mm; max-width: 120mm; color: #e4e6e9; }
