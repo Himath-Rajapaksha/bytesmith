@@ -9,13 +9,19 @@ DEST_ROOT="${1:-$HOME/.config/opencode/skills}"
 DEST="$DEST_ROOT/bytesmith"
 
 # The payload is the skill itself; dev tooling rides along so the test suites
-# travel with the install.
+# travel with the install. LICENSE and NOTICE are required, not optional:
+# Apache-2.0 section 4(a) requires that redistribution include a copy of the
+# license, and an installed skill folder is a redistribution.
 PAYLOAD=(
   SKILL.md
   checklist.md
   countermeasures.md
   report-template.html
   report-styles.css
+  LICENSE
+  NOTICE
+  README.md
+  CHANGELOG.md
   examples
   fixture
 )
