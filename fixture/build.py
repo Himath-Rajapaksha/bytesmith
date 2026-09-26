@@ -1,6 +1,12 @@
-import pathlib, sys, datetime
-W = pathlib.Path("/home/anorak/Works/bytesmith/fixture")
-SKILL = pathlib.Path("/root/.config/opencode/skills/bytesmith")
+import os, pathlib, sys, datetime
+
+# Resolve against this file, not an absolute path, so the fixture works from any
+# clone on any machine. BYTESMITH_SKILL_DIR overrides it for testing an
+# installed copy instead of the checkout.
+REPO = pathlib.Path(__file__).resolve().parent.parent
+W = REPO / "fixture"
+SKILL = pathlib.Path(os.environ.get("BYTESMITH_SKILL_DIR", REPO))
+
 html = (SKILL/"report-template.html").read_text()
 css  = (SKILL/"report-styles.css").read_text()
 (W/"report-styles.css").write_text(css)

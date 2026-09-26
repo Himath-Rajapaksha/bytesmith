@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 """Edge-case battery for the bytesmith scoring/report pipeline. Usage: python3 edge.py [--html-only] [--scenario NAME]."""
-import ast, datetime, pathlib, re, subprocess, sys, traceback
+import ast, datetime, os, pathlib, re, subprocess, sys, traceback
 
-FIX = pathlib.Path("/home/anorak/Works/bytesmith/fixture")
-SKILL = pathlib.Path("/root/.config/opencode/skills/bytesmith")
+# Resolve against this file so the battery runs from any clone. The skill
+# override lets CI (or a user) point at an installed copy instead.
+REPO = pathlib.Path(__file__).resolve().parent.parent
+FIX = REPO / "fixture"
+SKILL = pathlib.Path(os.environ.get("BYTESMITH_SKILL_DIR", REPO))
 EDGE = FIX / "edge"
 TEMPLATE = (SKILL / "report-template.html").read_text()
 CSS = (SKILL / "report-styles.css").read_text()
@@ -25,7 +28,9 @@ def strip_side_effects(tree):
 
 def load_build_ns():
     tree = strip_side_effects(ast.parse((FIX / "build.py").read_text(), "build.py"))
-    ns = {"__name__": "build_ns"}
+    # build.py resolves its repo from __file__, so the exec namespace has to
+    # look like a module rather than a bare dict.
+    ns = {"__name__": "build_ns", "__file__": str(FIX / "build.py")}
     exec(compile(tree, "build.py", "exec"), ns)
     return ns
 
@@ -281,7 +286,8 @@ def repro_build_divzero():
         if isinstance(node, ast.Assign) and getattr(node.targets[0], "id", None) == "W":
             node.value = ast.parse(f"pathlib.Path({str(EDGE / '_divzero')!r})").body[0].value
     try:
-        exec(compile(tree, "build.py", "exec"), {"__name__": "repro"})
+        exec(compile(tree, "build.py", "exec"),
+             {"__name__": "repro", "__file__": str(FIX / "build.py")})
         return "NO CRASH — suspected ZeroDivisionError did not reproduce"
     except ZeroDivisionError as e:
         frames = traceback.extract_tb(sys.exc_info()[2])
