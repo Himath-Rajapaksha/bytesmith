@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>{{PROJECT_NAME}} — VibeCode Auditor Report</title>
+<link rel="stylesheet" href="report-styles.css">
+</head>
+<body>
+
+<!-- ============ COVER ============ -->
+<div class="cover">
+  <div>
+    <div class="eyebrow">VibeCode Auditor · Forensic Design Report</div>
+    <h1>{{PROJECT_NAME}}</h1>
+    <div class="sub">{{TARGET_URL}}</div>
+  </div>
+
+  <div>
+    <div class="score-block">
+      <div class="score-num">{{AI_SCORE}}<span style="font-size:24pt">%</span></div>
+      <div class="score-meta">
+        <span class="band">{{SCORE_BAND}}</span>
+        <div class="verdict">{{VERDICT_LINE}}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="meta">
+    <span>36-POINT FORENSIC CHECKLIST</span>
+    <span>{{REPORT_DATE}}</span>
+    <span>Σ = {{RAW_SUM}} / 750</span>
+  </div>
+</div>
+
+<main>
+
+<!-- ============ 1. EXECUTIVE SUMMARY ============ -->
+<section>
+  <h2><span class="no">Section 01</span>Executive Summary</h2>
+
+  <div class="score-strip">
+    <div class="score-tile accent">
+      <div class="k">AI Usage Score</div>
+      <div class="v">{{AI_SCORE}}%</div>
+    </div>
+    <div class="score-tile">
+      <div class="k">Band</div>
+      <div class="v">{{SCORE_BAND}}</div>
+    </div>
+    <div class="score-tile">
+      <div class="k">Weighted sum</div>
+      <div class="v">{{RAW_SUM}} / 750</div>
+    </div>
+    <div class="score-tile">
+      <div class="k">Points ≥ Mild</div>
+      <div class="v">{{POINT_COUNT_MILD}}</div>
+    </div>
+  </div>
+
+  <div class="lead">{{EXEC_SUMMARY}}</div>
+
+  <div class="note">
+    <span class="h">How to read this report</span>
+    Every score below cites a hex value, a quoted line of copy, or an exact location.
+    Points scoring <strong>None</strong> are listed for completeness and contribute zero.
+    The percentage is a summary; the evidence tables are the finding.
+  </div>
+</section>
+
+<!-- ============ 2. SCORE CALCULATION ============ -->
+<section>
+  <h2><span class="no">Section 02</span>AI Usage Score — Calculation</h2>
+
+  <div class="formula">contribution = weight × presence (0-4) × likelihood (0-5)
+AI Usage Score = 100 × Σ contribution / 750   (750 = Σw 37.5 × 4 × 5)</div>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width:46%">Tier / group</th>
+        <th style="width:14%" class="num">Σ weight</th>
+        <th style="width:18%" class="num">Σ contribution</th>
+        <th style="width:22%" class="num">Share of total</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{CALC_ROWS}}
+      <tr class="total">
+        <td>Total</td>
+        <td class="num">37.5</td>
+        <td class="num">{{RAW_SUM}} / 750</td>
+        <td class="num"><span class="accent">{{AI_SCORE}}%</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="note">
+    <span class="h">Anti-gaming rules applied</span>
+    Correlated siblings capped (one of {gradients, purple-black, neon} may not carry the other two past
+    Moderate; same for {buzzwords, "it's not X it's Y"} and {3-tier pricing, checkmarks}).
+    Absence points — missing TOS/Privacy, missing skeletons, no personality — never exceed Mild unless a
+    point in the same section scored ≥ Moderate. Points scoring None contribute zero.
+  </div>
+
+  <h3>Band</h3>
+  <table>
+    <thead><tr><th style="width:18%">Range</th><th style="width:30%">Band</th><th>Reading</th></tr></thead>
+    <tbody>
+      <tr><td class="num">0 – 15</td><td>Human-crafted</td><td>Choices are visible and specific.</td></tr>
+      <tr><td class="num">15 – 35</td><td>Human + AI assists</td><td>Structure is human; parts are assembled.</td></tr>
+      <tr><td class="num">35 – 60</td><td>Hybrid</td><td>Human direction, AI execution, visible defaults.</td></tr>
+      <tr><td class="num">60 – 80</td><td>AI-dominant</td><td>Defaults are the design.</td></tr>
+      <tr><td class="num">80 – 100</td><td>Vibecoded</td><td>Nothing on this page was decided.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ============ 3. 36-POINT EVIDENCE ============ -->
+<section>
+  <h2><span class="no">Section 03</span>36-Point Evidence Table</h2>
+  <p class="small">Presence: 0 None · 1 Mild · 2 Moderate · 3 Heavy · 4 Extreme. Likelihood: how strongly this pattern's presence implies AI authorship <em>given the rest of the page</em> (0-5).</p>
+  <table>
+    <thead>
+      <tr>
+        <th style="width:5%">#</th>
+        <th style="width:16%">Point</th>
+        <th style="width:11%">Presence</th>
+        <th style="width:39%">Evidence</th>
+        <th style="width:8%" class="num">Likeli.</th>
+        <th style="width:6%" class="num">w</th>
+        <th style="width:15%" class="num">Contrib.</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{SCORE_ROWS}}
+    </tbody>
+  </table>
+</section>
+
+<!-- ============ 4. THE ROAST ============ -->
+<section>
+  <h2><span class="no">Section 04</span>The Roast</h2>
+  <div class="roast">
+    {{ROAST}}
+  </div>
+</section>
+
+<!-- ============ 5. COUNTERMEASURE BLUEPRINT ============ -->
+<section>
+  <h2><span class="no">Section 05</span>Human-Made Countermeasure Blueprint</h2>
+  <p class="lead">One executable alternative for every point that scored Presence ≥ Mild. Named typefaces, named layout devices, named color roles — no vibes.</p>
+  {{COUNTERMEASURES}}
+</section>
+
+<!-- ============ 6. ROADMAP ============ -->
+<section>
+  <h2><span class="no">Section 06</span>Remediation Roadmap</h2>
+  <p class="lead">Ordered by points recovered per unit of effort. Do the top row first; it moves the score more than the bottom three combined.</p>
+  <table>
+    <thead>
+      <tr>
+        <th style="width:12%">Priority</th>
+        <th style="width:12%">Effort</th>
+        <th style="width:40%">Action</th>
+        <th style="width:16%">Points affected</th>
+        <th style="width:20%" class="num">Est. score delta</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{ROADMAP_ROWS}}
+    </tbody>
+  </table>
+  <div class="note">
+    <span class="h">Sequencing note</span>
+    Content and proof (fake testimonials, stock photos, restated FAQs, buzzwords) are cheap to fix and
+    expensive to fake — do them before any visual work. Type and color come next; motion last, and only
+    where it means something.
+  </div>
+</section>
+
+<!-- ============ 7. APPENDIX ============ -->
+<section>
+  <h2><span class="no">Appendix A</span>Raw Notes &amp; Method</h2>
+  {{APPENDIX}}
+
+  <div class="sig">
+    Generated by VibeCode Auditor — For Human Eyes Only · {{REPORT_DATE}} ·
+    Σ {{RAW_SUM}}/750 · {{AI_SCORE}}%
+  </div>
+</section>
+
+</main>
+</body>
+</html>

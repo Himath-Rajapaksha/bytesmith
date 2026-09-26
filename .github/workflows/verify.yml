@@ -1,0 +1,92 @@
+name: verify
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Frontmatter and token contract
+        run: |
+          python3 - <<'PY'
+          import pathlib, re, sys
+          root = pathlib.Path('.')
+          skill = (root / 'SKILL.md').read_text()
+          fm = re.search(r'^---\n(.*?)\n---', skill, re.S)
+          assert fm, 'SKILL.md has no YAML frontmatter'
+          assert 'name: bytesmith' in fm.group(1), 'frontmatter missing name: bytesmith'
+          desc = re.search(r'description:\s*(.+)', fm.group(1))
+          assert desc, 'frontmatter missing description'
+          assert len(desc.group(1)) <= 1024, f'description too long: {len(desc.group(1))}'
+
+          tpl = (root / 'report-template.html').read_text()
+          want = set(re.findall(r'\{\{([A-Z_]+)\}\}', tpl))
+          doc = set(re.findall(r'\{\{([A-Z_]+)\}\}', skill)) - {'PLACEHOLDER'}
+          missing = want - doc
+          assert not missing, f'tokens in template but undocumented in SKILL.md: {sorted(missing)}'
+          print(f'frontmatter ok, description {len(desc.group(1))} chars, {len(want)} tokens documented')
+          PY
+
+      - name: Checklist integrity (36 points, Σw 37.5)
+        run: |
+          python3 - <<'PY'
+          import pathlib, re
+          cl = pathlib.Path('checklist.md').read_text()
+          pts = [(int(n), float(w)) for n, w in re.findall(
+              r'^\*\*(\d+)\. .+?\*\* — \*w ([\d.]+)\*', cl, re.M)]
+          assert sorted(n for n, _ in pts) == list(range(1, 37)), 'points are not 1-36'
+          total = round(sum(w for _, w in pts), 2)
+          assert total == 37.5, f'weights sum to {total}, expected 37.5'
+          groups = re.findall(r'^## ([A-E])\. .+? \((\d+)-(\d+)\)', cl, re.M)
+          assert ''.join(g[0] for g in groups) == 'ABCDE', 'groups are not A-E'
+          covered = [n for _, a, b in groups for n in range(int(a), int(b) + 1)]
+          assert sorted(covered) == list(range(1, 37)), 'groups do not tile 1-36'
+          print(f'checklist ok: 36 points, Σw {total}, 5 groups tiling 1-36')
+          PY
+
+      - name: Countermeasures (36 rows, 5 sections)
+        run: |
+          python3 - <<'PY'
+          import pathlib, re
+          cm = pathlib.Path('countermeasures.md').read_text()
+          rows = re.findall(r'^\|\s*(\d+)\s+([^|]+?)\s*\|\s*(.+?)\s*\|\s*$', cm, re.M)
+          assert len(rows) == 36, f'expected 36 remedies, found {len(rows)}'
+          assert sorted(int(r[0]) for r in rows) == list(range(1, 37)), 'remedy numbers not 1-36'
+          secs = re.findall(r'^## \d+\.', cm, re.M)
+          assert len(secs) == 5, f'expected 5 blueprint sections, found {len(secs)}'
+          print('countermeasures ok: 36 rows across 5 sections')
+          PY
+
+      - name: Fixture report renders and passes §7
+        run: |
+          python3 fixture/build.py
+          apt-get install -y --no-install-recommends poppler-utils >/dev/null
+          OUT="$RUNNER_TEMP/report.pdf"
+          chromium --headless --disable-gpu --no-sandbox \
+            --print-to-pdf="$OUT" --no-pdf-header-footer fixture/report.html 2>/dev/null
+          pdfinfo "$OUT" | grep -qE 'Pages:\s+([1-9]|1[0-9]|20)\b' || {
+            echo "FAIL: page count out of the 1-20 band"; pdfinfo "$OUT" | grep Pages; exit 1; }
+          pdfinfo "$OUT" | grep -q 'A4' || { echo 'FAIL: not A4'; exit 1; }
+          test "$(grep -c '{{' fixture/report.html)" = "0" || { echo 'FAIL: unreplaced tokens in HTML'; exit 1; }
+          test "$(pdftotext "$OUT" - | grep -c '{{')" = "0" || { echo 'FAIL: unreplaced tokens in PDF'; exit 1; }
+          pdftotext "$OUT" - | grep -qF 'For Human Eyes Only' || {
+            echo 'FAIL: no footer in PDF'; exit 1; }
+          echo "report ok: $(pdfinfo "$OUT" | grep -oP 'Pages:\s+\K\d+') pages, A4, 0 tokens, footer present"
+
+      - name: Edge battery (13 scenarios)
+        run: python3 fixture/edge.py --all
+
+      - name: Showcase page assertions
+        run: |
+          python3 site/build.py
+          python3 site/test_build.py
