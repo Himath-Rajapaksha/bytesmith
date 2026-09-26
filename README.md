@@ -9,7 +9,9 @@ blueprint, and prints it all as a PDF.
 [60,80) AI-dominant · [80,100] Vibecoded.
 
 The showcase page audits its own author with the unmodified skill and scored
-**11.3 — Human-crafted**: https://bytesmith-rust.vercel.app
+**11.3 — Human-crafted**. Read the evidence:
+[`examples/bytesmith-showcase-self-audit.pdf`](examples/bytesmith-showcase-self-audit.pdf) ·
+live at https://bytesmith-rust.vercel.app
 
 ## Install
 
@@ -48,6 +50,7 @@ rows name the exact `file:line` to edit.
 | `countermeasures.md` | 36 remedies in the 5 fixed blueprint sections |
 | `report-template.html` + `report-styles.css` | the 15-token PDF template |
 | `examples/acme-vibecode-audit.pdf` | 11-page sample report, score 38.8 · Hybrid |
+| `examples/bytesmith-showcase-self-audit.pdf` | the showcase page audited by this skill, 11.3 · Human-crafted |
 | `fixture/build.py` · `fixture/edge.py` | baseline renderer and the 13-scenario edge battery |
 | `site/build.py` | generator for the showcase page |
 

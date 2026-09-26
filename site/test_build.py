@@ -129,6 +129,22 @@ check("ruler svg present", "<svg" in html and 'viewBox="0 0 320 52"' in html)
 check("ruler has aria-label", 'aria-label="AI Usage Score' in html)
 check("ruler labels 0 and 100", ">0<" in html and ">100<" in html)
 
+print("\n== showcase <-> repository cross-links ==")
+REPO = "https://github.com/Himath-Rajapaksha/bytesmith"
+check("nav links to the repo", f'href="{REPO}"' in html)
+check("footer links to the repo", html.count(f'href="{REPO}"') >= 2)
+check("install step shows git clone", "git clone" in low and REPO in html)
+check("no bare cp-only install", "cp -r bytesmith ~/.config/opencode/skills/" in low)
+check("states its own audited score", "11.3" in html and "human-crafted" in low)
+check("links the self-audit report",
+      "bytesmith-showcase-self-audit.pdf" in html)
+check("names the license", "apache-2.0" in low)
+# a link that 404s is exactly what point 35 punishes, so the targets must exist
+for rel in ["examples/bytesmith-showcase-self-audit.pdf",
+            "examples/acme-vibecode-audit.pdf",
+            "LICENSE", "NOTICE"]:
+    check(f"link target exists: {rel}", (HERE.parent / rel).exists())
+
 print("\n== structure ==")
 check("single h1", html.count("<h1>") == 1)
 check("section ids wired to nav",

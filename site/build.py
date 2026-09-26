@@ -24,6 +24,16 @@ MOSS = "#4a5d3a"
 GOLD = "#8a6d1f"
 RULE = "#d9d3c7"
 
+# The showcase and the repository point at each other; neither link is decorative.
+REPO = "https://github.com/Himath-Rajapaksha/bytesmith"
+SELF_AUDIT = REPO + "/blob/main/examples/bytesmith-showcase-self-audit.pdf"
+REPO_SLAB = "Himath-Rajapaksha/bytesmith"
+# This page's own audit result. Kept as constants so the number published here
+# is the number in the shipped report -- if one moves, both must be edited.
+SELF_SCORE = "11.3"
+SELF_BAND = "Human-crafted"
+LICENSE = "Apache-2.0"
+
 BANDS = [
     ("0 – 15", "Human-crafted"),
     ("15 – 35", "Human + AI assists"),
@@ -325,6 +335,14 @@ footer {{
 }}
 footer .wordmark {{ font-size: 17px; color: var(--ink); }}
 footer .right {{ margin-left: auto; font-family: var(--mono); font-size: 12px; }}
+footer a {{ color: inherit; text-decoration: none; border-bottom: 1px solid var(--rule); }}
+footer a:hover {{ border-bottom-color: var(--rust); }}
+.masthead nav a[href^="http"] {{ color: var(--moss); }}
+p a {{
+  color: var(--rust); text-decoration: none;
+  border-bottom: 1px solid #d8b6a6; font-weight: 700;
+}}
+p a:hover {{ border-bottom-color: var(--rust); }}
 
 /* radius by hierarchy, not one soft value everywhere */
 .cta, .artifact, details, .spec {{ border-radius: 2px; }}
@@ -454,6 +472,7 @@ def build(skill_dir, out_dir):
     <a href="#points">The 36 points</a>
     <a href="#blueprint">Blueprint</a>
     <a href="#install">Install</a>
+    <a href="{REPO}">Source</a>
   </nav>
 </header>
 
@@ -527,6 +546,7 @@ def build(skill_dir, out_dir):
     <div>
       <h2>Copy the folder. Ask a question.</h2>
       <ol class="install">
+        <li><code>git clone {REPO[:-6]}.git</code></li>
         <li><code>cp -r bytesmith ~/.config/opencode/skills/</code></li>
         <li>Open the project you want read.</li>
         <li>Ask: <em>"run a bytesmith audit on this project"</em></li>
@@ -545,6 +565,10 @@ def build(skill_dir, out_dir):
       <p class="sub" style="margin:0">Those figures are the shipped sample
       report — an AI-generated landing page, rendered and scored by the
       unmodified skill.</p>
+      <p class="sub" style="margin:18px 0 0">This page was then held to the
+      same instrument. <b>{SELF_SCORE} — {SELF_BAND}</b>, four points at Mild
+      or worse, published rather than quietly fixed:
+      <a href="{SELF_AUDIT}">read the 11-page audit of this page</a>.</p>
     </div>
   </div>
   <p class="fine">Band edges: 0 Human-crafted · 15 Human + AI assists · 35 Hybrid
@@ -556,7 +580,7 @@ def build(skill_dir, out_dir):
 <footer>
   <span class="wordmark">Byte<span class="cut">smith</span></span>
   <span>Forensic design audit · checklist and blueprint are the skill's own files</span>
-  <span class="right">Σ 291 / 750 · 36 points</span>
+  <span class="right"><a href="{REPO}">github.com/{REPO_SLAB}</a> &nbsp;·&nbsp; {LICENSE}</span>
 </footer>
 
 </div>
