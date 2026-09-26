@@ -9,6 +9,7 @@ countermeasures.md so the showcase can never drift from the skill.
 
 import argparse
 import html
+import os
 import pathlib
 import re
 import sys
@@ -572,8 +573,12 @@ def build(skill_dir, out_dir):
 def main():
     ap = argparse.ArgumentParser()
     here = pathlib.Path(__file__).resolve().parent
-    ap.add_argument("--skill-dir", default=str(
-        pathlib.Path.home() / ".config/opencode/skills/bytesmith"))
+    # Default to the repo this file lives in, so the generator works from any
+    # clone. BYTESMITH_SKILL_DIR (or --skill-dir) points it at an installed
+    # copy of the skill instead, e.g. to build the site against what a user
+    # actually has installed.
+    default_skill = os.environ.get("BYTESMITH_SKILL_DIR") or str(here.parent)
+    ap.add_argument("--skill-dir", default=default_skill)
     ap.add_argument("--out", default=str(here / "dist"))
     a = ap.parse_args()
     build(a.skill_dir, a.out)
