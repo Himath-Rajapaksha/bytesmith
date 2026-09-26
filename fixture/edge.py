@@ -11,6 +11,10 @@ EDGE = FIX / "edge"
 TEMPLATE = (SKILL / "report-template.html").read_text()
 CSS = (SKILL / "report-styles.css").read_text()
 P_LABEL = {0: "None", 1: "Mild", 2: "Moderate", 3: "Heavy", 4: "Extreme"}
+# Browser binary. Overridable because the name differs by platform: CI images
+# ship google-chrome, Debian/Ubuntu packages call it chromium, and Ubuntu's
+# chromium is a snap stub that cannot render headless.
+BROWSER = os.environ.get("BYTESMITH_BROWSER", "chromium")
 
 
 def strip_side_effects(tree):
@@ -222,7 +226,7 @@ def render_pdf(name):
     out = EDGE / f"report-{name}.pdf"
     if out.exists():
         out.unlink()
-    r = subprocess.run(["chromium", "--headless", "--disable-gpu", "--no-sandbox",
+    r = subprocess.run([BROWSER, "--headless", "--disable-gpu", "--no-sandbox",
                         f"--print-to-pdf={out}", "--no-pdf-header-footer",
                         f"report-{name}.html"],
                        cwd=EDGE, capture_output=True, text=True, timeout=180)
@@ -233,7 +237,7 @@ def render_pdf(name):
             raise RuntimeError(f"render failed: chromium rc={r.returncode} "
                                f"{r.stderr[-300:]}; weasyprint rc={r2.returncode} {r2.stderr[-300:]}")
         return out, "weasyprint-fallback"
-    return out, "chromium"
+    return out, BROWSER
 
 
 def checks7(pdf, name):

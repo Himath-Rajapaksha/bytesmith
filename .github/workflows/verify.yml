@@ -67,12 +67,30 @@ jobs:
           print('countermeasures ok: 36 rows across 5 sections')
           PY
 
+      - name: Resolve browser and poppler
+        run: |
+          set -euo pipefail
+          # Ubuntu's "chromium" is a snap stub that cannot render headless, and
+          # GitHub images ship Google Chrome instead. Pick whichever is real.
+          for c in google-chrome-stable google-chrome chromium chromium-browser; do
+            if command -v "$c" >/dev/null 2>&1; then
+              echo "BYTESMITH_BROWSER=$c" >> "$GITHUB_ENV"
+              echo "browser: $c ($(command -v "$c"))"
+              break
+            fi
+          done
+          if ! command -v pdfinfo >/dev/null 2>&1; then
+            echo "poppler-utils missing; installing (needs sudo on runners)"
+            sudo apt-get update -qq
+            sudo apt-get install -y --no-install-recommends poppler-utils
+          fi
+          echo "pdfinfo: $(command -v pdfinfo)"
+
       - name: Fixture report renders and passes §7
         run: |
           python3 fixture/build.py
-          apt-get install -y --no-install-recommends poppler-utils >/dev/null
           OUT="$RUNNER_TEMP/report.pdf"
-          chromium --headless --disable-gpu --no-sandbox \
+          "$BYTESMITH_BROWSER" --headless --disable-gpu --no-sandbox \
             --print-to-pdf="$OUT" --no-pdf-header-footer fixture/report.html 2>/dev/null
           pdfinfo "$OUT" | grep -qE 'Pages:\s+([1-9]|1[0-9]|20)\b' || {
             echo "FAIL: page count out of the 1-20 band"; pdfinfo "$OUT" | grep Pages; exit 1; }
