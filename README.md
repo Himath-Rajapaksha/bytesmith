@@ -8,10 +8,12 @@ blueprint, and prints it all as a PDF.
 **Bands:** [0,15) Human-crafted · [15,35) Human + AI assists · [35,60) Hybrid ·
 [60,80) AI-dominant · [80,100] Vibecoded.
 
-The showcase page audits its own author with the unmodified skill and scored
-**11.3 — Human-crafted**. Read the evidence:
+The showcase page audits its own author with the unmodified skill. An earlier
+revision scored **11.3 — Human-crafted**; read that evidence:
 [`examples/bytesmith-showcase-self-audit.pdf`](examples/bytesmith-showcase-self-audit.pdf) ·
-live at https://bytesmith-rust.vercel.app
+live at https://bytesmith-rust.vercel.app ·
+[terms](https://bytesmith-rust.vercel.app/terms) ·
+[privacy](https://bytesmith-rust.vercel.app/privacy)
 
 ## Install
 
@@ -49,10 +51,12 @@ rows name the exact `file:line` to edit.
 | `checklist.md` | 36 fingerprints, presence 0–4 × likelihood 1–5, Σw = 37.5, max 750 |
 | `countermeasures.md` | 36 remedies in the 5 fixed blueprint sections |
 | `report-template.html` + `report-styles.css` | the 15-token PDF template |
-| `examples/acme-vibecode-audit.pdf` | 11-page sample report, score 38.8 · Hybrid |
-| `examples/bytesmith-showcase-self-audit.pdf` | the showcase page audited by this skill, 11.3 · Human-crafted |
 | `fixture/build.py` · `fixture/edge.py` | baseline renderer and the 13-scenario edge battery |
-| `site/build.py` | generator for the showcase page |
+| `fixture/EDGE-REPORT.md` | recorded battery run — band edges, bounds, anti-gaming |
+| `site/build.py` | generator for the showcase page, its `/terms` and its `/privacy` |
+| `.github/workflows/verify.yml` | CI — checklist integrity, fixture §7, edge battery, page assertions |
+| `examples/acme-vibecode-audit.pdf` | 11-page sample report, score 38.8 · Hybrid |
+| `examples/bytesmith-showcase-self-audit.pdf` | self-audit of an earlier showcase revision, 11.3 · Human-crafted |
 
 ## Sample output
 
@@ -64,11 +68,15 @@ evidence table, group calc, roast, countermeasures, roadmap, raw notes.
 ```bash
 python3 fixture/build.py            # render the baseline report
 python3 fixture/edge.py --all       # 13-scenario battery (band edges, bounds, anti-gaming)
+python3 site/build.py               # regenerate site/dist (gitignored)
 python3 site/test_build.py          # showcase page assertions
 ./install.sh                        # sync into ~/.config/opencode/skills/
 ```
 
-Both suites run in CI on every push.
+Both suites run in CI on every push. The site suite is the design contract: it
+asserts the palette, the type scale, the report's style parity with
+`report-styles.css`, and the banned patterns — gradients, card mosaics, equal
+three-column grids, bare Inter/Geist, emoji.
 
 ## License
 
