@@ -417,6 +417,18 @@ for rel, needle in CITES:
           isinstance(n, int) and 1 <= n <= len(lines),
           f"got {n!r}, file has {len(lines)} lines")
 
+rails = re.findall(r'<aside class="rail"[^>]*>.*?</aside>', html, re.S)
+check("five source rails", len(rails) == 5, f"got {len(rails)}")
+check("each rail carries an exhibit number",
+      all(f"EXH. 0{i}" in html for i in range(1, 6)))
+for r_ in rails:
+    m = re.search(r'>[\w./-]+:\d+<', r_)
+    check("rail cite is file:line", m is not None, r_[:90])
+    if m:
+        rel = m.group(0).strip("<>")
+        check(f"rail cite target exists: {rel.split(':')[0]}",
+              (HERE.parent / rel.split(":")[0]).exists())
+
 print("\n== radius assigned by hierarchy (not one soft value) ==")
 check("sharp rules/rows", "border-radius: 0" in low)
 check("tight panel radius", "border-radius: 2px" in low)

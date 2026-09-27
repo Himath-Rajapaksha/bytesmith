@@ -925,6 +925,26 @@ def build(skill_dir, out_dir):
             f"not {DENOM:g}"
         )
 
+    # ---- exhibit table: section id -> (exhibit no, source file, cite needle).
+    # Each section's rail cites the exact source line it was generated from;
+    # cite_line() fails the build if the needle ever moves.
+    EXHIBITS = {
+        "runs":      ("01", "SKILL.md",           "## 1. Ingest & Map"),
+        "points":    ("02", "checklist.md",       "# 36-Point Checklist"),
+        "scored":    ("03", "SKILL.md",           "## 3. Scoring Math"),
+        "blueprint": ("04", "countermeasures.md", "## 1. Visual System"),
+        "install":   ("05", "README.md",          "## Install"),
+    }
+
+    def rail_html(sect):
+        exh, rel, needle = EXHIBITS[sect]
+        return (
+            f'<aside class="rail" aria-label="Exhibit {int(exh)} — {rel} source">'
+            f'<span class="exh">EXH. {exh}</span>'
+            f'<span class="cite">{rel}:{cite_line(rel, needle)}</span>'
+            f'</aside>'
+        )
+
     # ---- hero artifact. The legend decodes each fill to a name; the ruler
     # above it carries the stations, so the two never print the same number.
     key_rows = "".join(
@@ -1020,6 +1040,7 @@ def build(skill_dir, out_dir):
 </div>
 
 <section id="runs">
+  {rail_html("runs")}
   <p class="sec-no">01 — How it runs</p>
   <h2>Source and screen, read together.</h2>
   <p class="sub">A screenshot tells you what a page looks like. The source tells
@@ -1045,6 +1066,7 @@ def build(skill_dir, out_dir):
 </section>
 
 <section id="points">
+  {rail_html("points")}
   <p class="sec-no">02 — The checklist</p>
   <h2>Thirty-six fingerprints, five groups, no vibes.</h2>
   <p class="sub">Every row on this page is generated from the skill's own
@@ -1060,6 +1082,7 @@ def build(skill_dir, out_dir):
 </section>
 
 <section id="scored">
+  {rail_html("scored")}
   <p class="sec-no">03 &mdash; How a point is scored</p>
   <h2>One fingerprint, taken apart.</h2>
   <p class="sub">A score is three numbers multiplied. The weight comes from the
@@ -1115,6 +1138,7 @@ def build(skill_dir, out_dir):
 </section>
 
 <section id="blueprint">
+  {rail_html("blueprint")}
   <p class="sec-no">04 &mdash; The blueprint</p>
   <h2>What to do about each one.</h2>
   <p class="sub">The same {sum(len(r) for _, _, r in sections)} rows the skill
@@ -1124,6 +1148,7 @@ def build(skill_dir, out_dir):
 </section>
 
 <section id="install">
+  {rail_html("install")}
   <p class="sec-no">05 &mdash; Install</p>
   <div class="two">
     <div>
