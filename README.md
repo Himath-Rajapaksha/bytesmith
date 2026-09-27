@@ -8,8 +8,8 @@ blueprint, and prints it all as a PDF.
 **Bands:** [0,15) Human-crafted · [15,35) Human + AI assists · [35,60) Hybrid ·
 [60,80) AI-dominant · [80,100] Vibecoded.
 
-The showcase page audits its own author with the unmodified skill. An earlier
-revision scored **11.3 — Human-crafted**; read that evidence:
+The showcase page audits its own author with the unmodified skill. The current
+revision scores **0.5 — Human-crafted** (2026-09-27 re-run); read that evidence:
 [`examples/bytesmith-showcase-self-audit.pdf`](examples/bytesmith-showcase-self-audit.pdf) ·
 live at https://bytesmith-rust.vercel.app ·
 [terms](https://bytesmith-rust.vercel.app/terms) ·
@@ -56,7 +56,7 @@ rows name the exact `file:line` to edit.
 | `site/build.py` | generator for the showcase page, its `/terms` and its `/privacy` |
 | `.github/workflows/verify.yml` | CI — checklist integrity, fixture §7, edge battery, page assertions |
 | `examples/acme-vibecode-audit.pdf` | 11-page sample report, score 38.8 · Hybrid |
-| `examples/bytesmith-showcase-self-audit.pdf` | self-audit of an earlier showcase revision, 11.3 · Human-crafted |
+| `examples/bytesmith-showcase-self-audit.pdf` | self-audit of the showcase page (2026-09-27 re-run), 0.5 · Human-crafted |
 
 ## Sample output
 
