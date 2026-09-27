@@ -429,6 +429,16 @@ for r_ in rails:
         check(f"rail cite target exists: {rel.split(':')[0]}",
               (HERE.parent / rel.split(":")[0]).exists())
 
+check("sections are a two-column rail grid",
+      re.search(r"section\s*\{[^}]*grid-template-columns", html) is not None)
+check("rail column is first",
+      re.search(r"grid-template-columns:\s*18ch", html) is not None)
+check("rail rule is on the right, not the left",
+      re.search(r"\.rail\s*\{[^}]*border-right", html) is not None
+      and "border-left" not in low)
+check("narrow breakpoint hides the rail rule",
+      "@media (max-width" in low and "border-right: none" in low)
+
 print("\n== radius assigned by hierarchy (not one soft value) ==")
 check("sharp rules/rows", "border-radius: 0" in low)
 check("tight panel radius", "border-radius: 2px" in low)

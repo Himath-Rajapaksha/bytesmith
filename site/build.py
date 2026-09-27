@@ -395,7 +395,22 @@ figcaption {{
 .sw.b5 {{ background: var(--band-5); }}
 
 /* ---- sections ---- */
-section {{ border-top: 1px solid var(--rule); padding: 60px 0; scroll-margin-top: 16px; }}
+section {{
+  border-top: 1px dashed var(--rule);
+  padding: 60px 0; scroll-margin-top: 16px;
+  display: grid; grid-template-columns: 18ch minmax(0, 1fr); column-gap: 34px;
+}}
+section > *:not(.rail) {{ grid-column: 2; }}
+.rail {{
+  grid-column: 1; grid-row: 1 / span 999;
+  border-right: 1px solid var(--rule);
+  padding-right: 14px; margin-right: 0;
+  font-family: var(--mono); font-size: var(--t--2);
+  display: flex; flex-direction: column; gap: 8px;
+  align-items: flex-end; text-align: right;
+}}
+.rail .exh {{ color: var(--text-quiet); letter-spacing: 0.12em; }}
+.rail .cite {{ color: var(--ink); word-break: break-word; }}
 .sec-no {{
   font-family: var(--mono); font-size: var(--t--1); letter-spacing: 0.14em;
   color: var(--rust); margin: 0 0 12px;
@@ -626,6 +641,11 @@ table, .steps li, .band-key li, .sw, .calc-t td {{ border-radius: 0; }}
   td.w {{ width: 38px; }}
   td {{ padding-right: 8px; }}
   .legal {{ padding-top: 36px; }}
+}}
+@media (max-width: 860px) {{
+  section {{ grid-template-columns: 1fr; }}
+  .rail {{ grid-column: 1; grid-row: auto; border-right: none; margin-bottom: 18px;
+          flex-direction: row; align-items: baseline; gap: 14px; }}
 }}
 @media print {{
   .masthead nav, .skip {{ display: none; }}
