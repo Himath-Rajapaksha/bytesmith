@@ -439,6 +439,13 @@ check("rail rule is on the right, not the left",
 check("narrow breakpoint hides the rail rule",
       "@media (max-width" in low and "border-right: none" in low)
 
+check("score stamp present", 'class="stamp"' in html)
+check("score stamp is rotated, not centered",
+      re.search(r"\.stamp\s*\{[^}]*rotate\(", html) is not None
+      and "text-align: center" not in low)
+check("stamp text carries the verdict",
+      "11.3" in html and "human-crafted" in low)
+
 print("\n== radius assigned by hierarchy (not one soft value) ==")
 check("sharp rules/rows", "border-radius: 0" in low)
 check("tight panel radius", "border-radius: 2px" in low)

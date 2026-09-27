@@ -393,6 +393,13 @@ figcaption {{
 .sw.b3 {{ background: var(--band-3); }}
 .sw.b4 {{ background: var(--band-4); }}
 .sw.b5 {{ background: var(--band-5); }}
+.stamp {{
+  display: inline-block; margin: 0 0 22px; padding: 9px 14px;
+  border: 2px solid var(--rust); border-radius: 2px;
+  transform: rotate(-6deg); transform-origin: left center;
+  font-family: var(--mono); font-size: var(--t--1);
+  text-transform: uppercase; letter-spacing: 0.13em; color: var(--rust);
+}}
 
 /* ---- sections ---- */
 section {{
@@ -1051,6 +1058,7 @@ def build(skill_dir, out_dir):
   </div>
 
   <aside class="artifact">
+    <p class="stamp">This build &middot; {SELF_SCORE} &middot; {SELF_BAND}</p>
     <figure class="fig">
     {ruler_svg()}
     <figcaption>FIG. 1 &mdash; AI USAGE SCORE, FIVE BANDS, &Sigma;w {total_w:g}</figcaption>
