@@ -59,7 +59,7 @@ EDGE_SCENARIOS = 13
 CI_CHECKS = 9
 # This page's own audit result. Kept as constants so the number published here
 # is the number in the shipped report -- if one moves, both must be edited.
-SELF_SCORE = "11.3"
+SELF_SCORE = "0.5"
 SELF_BAND = "Human-crafted"
 # Verified against the shipped PDF by test_build.py -- see "claims a page
 # count" there. Hardcoding it is a drift risk, so the test reads the PDF.
@@ -84,7 +84,7 @@ BAND_EDGES = [0, 15, 35, 60, 80, 100]
 # section. Every number below is read from checklist.md and SKILL.md §3,
 # and the contribution is computed rather than typed, so the page cannot
 # print an arithmetic error. Point 12 is the specimen because it is one of
-# the four findings the shipped self-audit raised, and the fix is a single
+# the four findings the earlier self-audit raised, and the fix is a single
 # declaration in this file -- so the worked example is checkable against
 # the diff.
 WORKED = {
@@ -343,10 +343,11 @@ h1 {{
   font-size: var(--s1); line-height: 1.62; color: var(--text);
   max-width: var(--measure); margin: 0 0 30px; text-wrap: pretty;
 }}
-/* The page's only italic on purpose. Point 5 is its largest open finding:
-   the shipped self-audit counted three italic serif spans in one hero
-   paragraph. Two are gone. The remaining one carries the argument, which
-   is the cure its own blueprint prescribed. See countermeasures.md §2. */
+/* The page's only italic on purpose. Point 5 stays open at Mild: the earlier
+   self-audit counted three italic serif spans in one hero paragraph, two are
+   gone, and the 2026-09-27 re-run counts exactly one -- carried at 1.000.
+   The survivor holds the argument, which is the cure its own blueprint
+   prescribed. See countermeasures.md §2. */
 .lede em {{ font-family: var(--serif); font-style: italic; color: var(--ink); }}
 .cta {{
   display: inline-block; background: var(--ink); color: var(--paper);
@@ -544,7 +545,7 @@ details .antidote {{
 /* proof / install */
 /* Point 12 remedy, applied. This block used to be defined by a 3px moss
    left-strip -- the coloured left-strip variant, and the entire reason
-   the shipped self-audit raised point 12. A container is now held off
+   the earlier self-audit raised point 12. A container is now held off
    the page by a 1px rule box, a surface fill and a 2px ink top rule:
    the same move the tables already make. The colour role moved out of
    the container and into the text, which is what countermeasures.md
@@ -756,13 +757,13 @@ def ruler_svg():
 # drawn to scale: this point's contribution against the 750 capacity.
 #
 # The contribution is computed from the formula in SKILL.md §3, not copied
-# out of the shipped self-audit. That report's own contribution column does
-# not reconcile with the formula it cites -- its four findings carry ratios
-# of 0.20, 0.20, 0.089 and 0.80 against w x presence x likelihood, so no one
-# normalisation explains it. The skill's own law is "no score without
-# evidence", and the evidence here is the formula, so the formula wins.
-# Reproducing the figure instead would be the page committing the crime it
-# prosecutes: a number the stated method does not produce.
+# out of a report. The superseded 2026-09-26 self-audit's own contribution
+# column did not reconcile with the formula it cited -- its four findings
+# carried ratios of 0.20, 0.20, 0.089 and 0.80 against w x presence x
+# likelihood, so no one normalisation explains it. The skill's own law is
+# "no score without evidence", and the evidence here is the formula, so the
+# formula wins. Reproducing the figure instead would be the page committing
+# the crime it prosecutes: a number the stated method does not produce.
 SC_U = 320                     # viewBox width
 BAR_X, BAR_W = 8.0, 304.0      # the 750-capacity bar
 PX_PER_UNIT = BAR_W / DENOM    # 0.4053 px per unit of contribution
@@ -1205,19 +1206,20 @@ def build(skill_dir, out_dir):
       report &mdash; an AI-generated landing page, rendered and scored by the
       unmodified skill.</p>
       <p class="sub" style="margin:18px 0 0">This page was then held to the
-      same instrument. <b>{SELF_SCORE} &mdash; {SELF_BAND}</b>, four points at Mild
-      or worse, published rather than quietly fixed, and then all four fixed in
-      this build rather than in the number:
+      same instrument. The 2026-09-27 re-run returned
+      <b>{SELF_SCORE} &mdash; {SELF_BAND}</b>, four points at Mild
+      or worse, published rather than quietly fixed:
       <a href="{SELF_AUDIT}">read the {SELF_PAGES}-page audit of this page</a>.</p>
     </div>
   </div>
-  <p class="fine"><b>The four findings are closed.</b> The report&rsquo;s roadmap
-  priced them at &minus;4.0, &minus;2.0, &minus;2.0 and &minus;1.3, which puts
-  the page at 2.0. All four are done in source: the two decorative italic spans
-  are gone, the moss left-strip is gone, the rhetorical pivot is now a flat claim,
-  and the terms and privacy pages exist and are dated. The score on this page is
-  still the {SELF_SCORE} that was published, because that is what the shipped
-  report says; a re-audit has not been run, so a new number would be a guess.</p>
+  <p class="fine"><b>The four findings are closed.</b> The earlier report&rsquo;s
+  roadmap priced them at &minus;4.0, &minus;2.0, &minus;2.0 and &minus;1.3, which would
+  have put the page at 2.0. All four are done in source: the two decorative italic
+  spans are gone, the moss left-strip is gone, the rhetorical pivot is now a flat
+  claim, and the terms and privacy pages exist and are dated. The re-run recomputed
+  all 36 points from the formula instead of inheriting the old figures, and returned
+  {SELF_SCORE}: four smaller points remain open, each carried at Mild and published
+  rather than quietly fixed.</p>
   <p class="fine"><b>No testimonials here.</b> Point 27 asks for quotes that can
   be verified &mdash; full name, role, company, something to link. This project
   has one changelog entry and nobody on record who has agreed to be quoted, so
@@ -1262,9 +1264,10 @@ def build(skill_dir, out_dir):
     written = [out / "index.html"]
 
     # ---- /terms and /privacy. Point 32 of the checklist is scored on these
-    # existing, dated and linked. They were missing, which cost the page
-    # 0.800 of its 11.3 -- the largest single contribution of the four open
-    # findings. They ship from the same generator, in the same design
+    # existing, dated and linked. They were missing, which cost 0.800 in the
+    # superseded 11.3 audit -- the largest single contribution of that
+    # report's four open findings; the 2026-09-27 re-run scores the point at
+    # zero. They ship from the same generator, in the same design
     # system, because a legal stub reads worse than an honest page and
     # neither of those is a page worth linking to.
     for slug, title, desc, stamp, body in legal_pages():

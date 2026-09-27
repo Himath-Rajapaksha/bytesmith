@@ -179,9 +179,10 @@ check("arithmetic is printed on the page",
 check("denominator printed and derived",
       re.search(r"750 = 37\.5 (?:&Sigma;|Σ)w (?:&times;|×) 4 (?:&times;|×) 5",
                 html) is not None)
-# The shipped self-audit prints 0.400 for point 12, which its own cited
-# formula cannot produce. The page follows the formula instead, so the
-# unreconcilable figure must not appear anywhere in the output.
+# The superseded self-audit printed 0.400 for point 12, a figure its own
+# cited formula cannot produce; the re-run prints 0.000. The page follows
+# the formula instead, so the unreconcilable figure must not appear anywhere
+# in the output.
 check("worked figure comes from the formula, not the report",
       "0.400" not in html)
 check("presence and likelihood ranges printed",
@@ -213,14 +214,16 @@ check("the scoring section states which source wins a disagreement",
                 html) is not None)
 
 print("\n== the four open findings are closed ==")
-# point 5: three italic serif spans in one hero paragraph scored 0.800. The
-# shipped blueprint's own remedy is to keep exactly one.
+# point 5: three italic serif spans in one hero paragraph (0.800 in the
+# superseded audit, 1.000 in the re-run). The blueprint's own remedy is to
+# keep exactly one.
 check("exactly one italic on the page", html.count("<em>") == 1)
 check("the survivor is 'line to change'", "<em>line to change</em>" in html)
-# point 25: the X-not-Y pivot, 0.267. The remedy is a flat claim.
+# point 25: the X-not-Y pivot. The remedy is a flat claim.
 check("pivot removed", "not the vibe to change" not in html)
 check("flat claim printed", "Every point names the" in html)
-# point 12: the 3px moss left-strip was all of 0.400.
+# point 12: the 3px moss left-strip (0.400 in the superseded audit, zero in
+# the re-run).
 check("moss left-strip removed from .spec", "border-left" not in low)
 check(".spec uses a rule box + ink top rule",
       re.search(r"\.spec\s*\{[^}]*border:\s*1px solid var\(--rule\)", html)
@@ -228,7 +231,7 @@ check(".spec uses a rule box + ink top rule",
       and re.search(r"\.spec\s*\{[^}]*border-top:\s*2px solid var\(--ink\)", html)
       is not None)
 # point 32: /terms and /privacy did not exist and the footer carried no legal
-# links. 0.800 -- the largest of the four.
+# links (0.800 in the superseded audit, the largest of its four).
 check("footer links both legal pages",
       html.count('href="/terms"') == 1 and html.count('href="/privacy"') == 1)
 check("page states the four findings are closed",
@@ -352,7 +355,7 @@ check("nav links to the repo", f'href="{REPO}"' in html)
 check("footer links to the repo", html.count(f'href="{REPO}"') >= 2)
 check("install step shows git clone", "git clone" in low and REPO in html)
 check("no bare cp-only install", "cp -r bytesmith ~/.config/opencode/skills/" in low)
-check("states its own audited score", "11.3" in html and "human-crafted" in low)
+check("states its own audited score", "0.5" in html and "human-crafted" in low)
 check("links the self-audit report",
       "bytesmith-showcase-self-audit.pdf" in html)
 check("names the license", "apache-2.0" in low)
@@ -383,7 +386,7 @@ if pdf.exists():
         print("  SKIP  pdfinfo unavailable; cannot verify the page-count claim")
     txt = subprocess.run(["pdftotext", str(pdf), "-"], capture_output=True, text=True).stdout
     m = _re.search(r"\b(\d+\.\d)\b", txt.split("Σ =")[0] if "Σ =" in txt else "")
-    check("self-audit score appears in the shipped PDF", "11.3" in txt)
+    check("self-audit score appears in the shipped PDF", "0.5" in txt)
     check("self-audit band appears in the shipped PDF", "HUMAN-CRAFTED" in txt.upper())
 else:
     check("self-audit PDF shipped", False, "file missing")
@@ -451,7 +454,7 @@ check("score stamp is rotated, not centered",
       re.search(r"\.stamp\s*\{[^}]*rotate\(", html) is not None
       and "text-align: center" not in low)
 check("stamp text carries the verdict",
-      "11.3" in html and "human-crafted" in low)
+      "0.5" in html and "human-crafted" in low)
 
 print("\n== radius assigned by hierarchy (not one soft value) ==")
 check("sharp rules/rows", "border-radius: 0" in low)
