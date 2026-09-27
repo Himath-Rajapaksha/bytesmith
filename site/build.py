@@ -14,6 +14,10 @@ import pathlib
 import re
 import sys
 
+# Repo root: the cited source files (SKILL.md, checklist.md, README.md, ...)
+# live one level above site/.
+ROOT = pathlib.Path(__file__).resolve().parent.parent
+
 # ---------------------------------------------------------------- palette
 
 PAPER = "#fbfaf7"
@@ -192,6 +196,15 @@ def validate(points, groups, sections):
             print(f"VALIDATION FAILED: {e}", file=sys.stderr)
         raise SystemExit(1)
     return total_w
+
+
+def cite_line(relpath, needle):
+    """1-based line number of `needle` in `relpath`. Fails the build if it moved."""
+    p = ROOT / relpath
+    for i, line in enumerate(p.read_text(encoding="utf-8").splitlines(), 1):
+        if needle in line:
+            return i
+    raise SystemExit(f"{relpath}: cite needle not found: {needle!r}")
 
 
 # ---------------------------------------------------------------- template

@@ -402,6 +402,21 @@ check("lang attribute", 'lang="en"' in html)
 check("responsive breakpoint", "@media (max-width" in low)
 check("no external JS", "<script" not in low)
 
+print("\n== docket cites ==")
+CITES = [
+    ("SKILL.md", "## 1. Ingest & Map"),
+    ("checklist.md", "# 36-Point Checklist"),
+    ("SKILL.md", "## 3. Scoring Math"),
+    ("countermeasures.md", "## 1. Visual System"),
+    ("README.md", "## Install"),
+]
+for rel, needle in CITES:
+    n = gen.cite_line(rel, needle) if hasattr(gen, "cite_line") else -1
+    lines = (HERE.parent / rel).read_text().splitlines() if (HERE.parent / rel).exists() else []
+    check(f"cite resolves: {rel} :: {needle}",
+          isinstance(n, int) and 1 <= n <= len(lines),
+          f"got {n!r}, file has {len(lines)} lines")
+
 print("\n== radius assigned by hierarchy (not one soft value) ==")
 check("sharp rules/rows", "border-radius: 0" in low)
 check("tight panel radius", "border-radius: 2px" in low)
