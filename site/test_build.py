@@ -439,6 +439,13 @@ check("rail rule is on the right, not the left",
 check("narrow breakpoint hides the rail rule",
       "@media (max-width" in low and "border-right: none" in low)
 
+_i860 = html.find("@media (max-width: 860px)")
+_blk860 = html[_i860:_i860 + 500] if _i860 >= 0 else ""
+check("narrow collapse also unsets children's grid-column",
+      re.search(r"section\s*>\s*\*:not\(\.rail\)\s*\{[^}]*grid-column:\s*1",
+                _blk860) is not None,
+      _blk860[:160])
+
 check("score stamp present", 'class="stamp"' in html)
 check("score stamp is rotated, not centered",
       re.search(r"\.stamp\s*\{[^}]*rotate\(", html) is not None

@@ -651,6 +651,7 @@ table, .steps li, .band-key li, .sw, .calc-t td {{ border-radius: 0; }}
 }}
 @media (max-width: 860px) {{
   section {{ grid-template-columns: 1fr; }}
+  section > *:not(.rail) {{ grid-column: 1; }}
   .rail {{ grid-column: 1; grid-row: auto; border-right: none; margin-bottom: 18px;
           flex-direction: row; align-items: baseline; gap: 14px; }}
 }}
